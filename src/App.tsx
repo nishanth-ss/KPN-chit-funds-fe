@@ -16,14 +16,11 @@ const App = () => {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/login" element={<Login />} />
+          <Route path="/login" element={<Login />} key="login" />
           <Route path="/" element={
             <ProtectedRoute>
               <Home />
             </ProtectedRoute>
-          } />
-          <Route path="/login" element={
-            <Login />
           } />
           <Route path="/users" element={
             <ProtectedRoute>
