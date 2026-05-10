@@ -22,6 +22,9 @@ const App = () => {
               <Home />
             </ProtectedRoute>
           } />
+          <Route path="/login" element={
+            <Login />
+          } />
           <Route path="/users" element={
             <ProtectedRoute>
               <Users />
