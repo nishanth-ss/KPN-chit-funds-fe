@@ -14,7 +14,7 @@ export const createUser = async (userData: {
       success: true,
       data: response.data,
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error("Create User Error:", error);
 
     return {

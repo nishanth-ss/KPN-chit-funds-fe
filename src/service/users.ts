@@ -9,7 +9,7 @@ export const getUsers = async () => {
       success: true,
       data: response.data,
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error("Get Users Error:", error);
 
     return {
@@ -30,7 +30,7 @@ export const getUserById = async (id: string) => {
       success: true,
       data: response.data,
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error("Get User By ID Error:", error);
 
     return {
@@ -58,7 +58,7 @@ export const CreateUsers = async (userData: {
       success: true,
       data: response.data,
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error("Create User Error:", error);
 
     return {
@@ -86,7 +86,7 @@ export const updateUser = async (id: string, userData: {
       success: true,
       data: response.data,
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error("Update User Error:", error);
 
     return {

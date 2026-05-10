@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { getUsers, CreateUsers, updateUser, deleteUser } from "../service/users";
-import { getChitCycleById } from "../service/chitcycles";
 import UserCard from "../components/UserCard";
 import CreateUser from "../components/CreateUser";
 import Header from "../components/Header";
@@ -26,33 +25,13 @@ const Users = () => {
   const [error, setError] = useState<string>("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
   const [editingUser, setEditingUser] = useState<User | undefined>(undefined);
-  const [cyclesMap, setCyclesMap] = useState<Record<string, any>>({}); // cycleId -> cycle data
-
+  
   const fetchUsers = async () => {
     setLoading(true);
     const result = await getUsers();
     if (result.success) {
       const fetchedUsers = result.data as User[];
       setUsers(fetchedUsers);
-
-      // Gather unique activeCycleIds
-      const uniqueCycleIds = Array.from(
-        new Set(fetchedUsers.map((u) => u.activeCycleId).filter(Boolean))
-      );
-
-      if (uniqueCycleIds.length > 0) {
-        const cycles: Record<string, any> = {};
-        for (const id of uniqueCycleIds) {
-          // eslint-disable-next-line no-await-in-loop
-          const cycleRes = await getChitCycleById(id as string);
-          if (cycleRes.success) {
-            cycles[id as string] = cycleRes.data;
-          }
-        }
-        setCyclesMap(cycles);
-      } else {
-        setCyclesMap({});
-      }
     } else {
       setError(result.message);
     }
@@ -72,6 +51,7 @@ const Users = () => {
   const handleSubmitUser = async (userData: {
     name: string;
     phoneNo: number;
+    chitNo: number;
     amount: number;
     status: "Pending" | "Selected" | "Rejected";
     roles: "admin" | "user";

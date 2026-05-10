@@ -10,6 +10,7 @@ interface User {
   _id: string;
   name: string;
   phoneNo: number;
+  chitNo: number;
   amount: number;
   status: "Pending" | "Selected" | "Rejected";
   roles?: "admin" | "user";
