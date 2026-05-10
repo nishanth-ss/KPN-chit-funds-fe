@@ -66,6 +66,7 @@ const Login: React.FC = () => {
         setError(result.message || 'Login failed');
       }
     } catch (err) {
+      console.error('Login error:', err);
       setError('Network error. Please try again.');
     } finally {
       setLoading(false);
