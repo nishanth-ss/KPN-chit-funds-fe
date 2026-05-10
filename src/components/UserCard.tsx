@@ -17,6 +17,7 @@ type UserStatus = "Pending" | "Selected" | "Rejected";
 type UserRole = "admin" | "user";
 
 interface User {
+  activeCycleId?: string;
   _id: string;
   name: string;
   phoneNo: number;
@@ -121,6 +122,12 @@ const UserCard: React.FC<UserCardProps> = ({
                   <span className="font-medium">Chit No:</span>
                   {user.chitNo}
                 </div>
+                {user.activeCycleId && (
+                <div className="flex items-center gap-1 text-gray-500 text-xs sm:text-sm mt-1">
+                  <span className="font-medium">Cycle ID:</span>
+                  {user.activeCycleId}
+                </div>
+                )}
               </div>
             </div>
 

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getUsers, CreateUsers, updateUser, deleteUser } from "../service/users";
+import { getChitCycleById } from "../service/chitcycles";
 import UserCard from "../components/UserCard";
 import CreateUser from "../components/CreateUser";
 import Header from "../components/Header";
@@ -7,9 +8,11 @@ import { Plus } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 interface User {
+  activeCycleId?: string;
   _id: string;
   name: string;
   phoneNo: number;
+  chitNo: number; // keep existing field, though not used directly here
   amount: number;
   status: "Pending" | "Selected" | "Rejected";
   roles?: "admin" | "user";
@@ -23,24 +26,43 @@ const Users = () => {
   const [error, setError] = useState<string>("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
   const [editingUser, setEditingUser] = useState<User | undefined>(undefined);
-
-  useEffect(() => {
-    fetchUsers();
-  }, []);
+  const [cyclesMap, setCyclesMap] = useState<Record<string, any>>({}); // cycleId -> cycle data
 
   const fetchUsers = async () => {
     setLoading(true);
-
     const result = await getUsers();
-
     if (result.success) {
-      setUsers(result.data);
+      const fetchedUsers = result.data as User[];
+      setUsers(fetchedUsers);
+
+      // Gather unique activeCycleIds
+      const uniqueCycleIds = Array.from(
+        new Set(fetchedUsers.map((u) => u.activeCycleId).filter(Boolean))
+      );
+
+      if (uniqueCycleIds.length > 0) {
+        const cycles: Record<string, any> = {};
+        for (const id of uniqueCycleIds) {
+          // eslint-disable-next-line no-await-in-loop
+          const cycleRes = await getChitCycleById(id as string);
+          if (cycleRes.success) {
+            cycles[id as string] = cycleRes.data;
+          }
+        }
+        setCyclesMap(cycles);
+      } else {
+        setCyclesMap({});
+      }
     } else {
       setError(result.message);
     }
-
     setLoading(false);
   };
+
+  useEffect(() => {
+    fetchUsers();
+    // Optionally, you could set up a polling interval to refresh cycles.
+  }, []);
 
   const handleEditUser = (user: User) => {
     setEditingUser(user);
@@ -54,24 +76,16 @@ const Users = () => {
     status: "Pending" | "Selected" | "Rejected";
     roles: "admin" | "user";
   }) => {
-    let result;
-    
-    if (editingUser) {
-      // Update existing user
-      result = await updateUser(editingUser._id, userData);
-    } else {
-      // Create new user
-      result = await CreateUsers(userData);
-    }
+    const result = editingUser
+      ? await updateUser(editingUser._id, userData)
+      : await CreateUsers(userData);
 
     if (result.success) {
-      // Refresh the users list
       await fetchUsers();
-      // Close the modal and reset editing state
       setIsCreateModalOpen(false);
       setEditingUser(undefined);
     } else {
-      alert(result.message || `Failed to ${editingUser ? 'update' : 'create'} user`);
+      alert(result.message || `Failed to ${editingUser ? "update" : "create"} user`);
     }
   };
 
@@ -83,9 +97,7 @@ const Users = () => {
   const handleDeleteUser = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this user?")) {
       const result = await deleteUser(id);
-      
       if (result.success) {
-        // Refresh the users list
         await fetchUsers();
       } else {
         alert(result.message || "Failed to delete user");
@@ -94,7 +106,7 @@ const Users = () => {
   };
 
   const handleViewUser = (user: User) => {
-    // TODO: Implement view functionality
+    // Placeholder for future view implementation
     alert(`View user: ${user.name}`);
   };
 
@@ -117,9 +129,7 @@ const Users = () => {
   return (
     <div className="min-h-screen bg-gray-100">
       <Header title="User Management" showHomeButton={true} />
-      
       <div className="p-6">
-        {/* Create User Button */}
         <div className="mb-6 flex justify-end">
           <button
             onClick={() => setIsCreateModalOpen(true)}
@@ -129,12 +139,11 @@ const Users = () => {
             Create User
           </button>
         </div>
-
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
           {users.map((user) => (
-            <UserCard 
-              key={user._id} 
-              user={user} 
+            <UserCard
+              key={user._id}
+              user={user}
               currentUser={currentUser}
               onEdit={handleEditUser}
               onDelete={handleDeleteUser}
@@ -143,7 +152,6 @@ const Users = () => {
           ))}
         </div>
       </div>
-
       <CreateUser
         isOpen={isCreateModalOpen}
         onClose={handleCloseModal}
